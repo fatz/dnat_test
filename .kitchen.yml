@@ -1,26 +1,49 @@
 ---
 driver:
-  name: vagrant
+  name: ec2
+  region: us-east-1
+  instance_type: m4.xlarge
+  aws_ssh_key_id: julferts
+  associate_public_ip: true
+  # subnet_id: subnet-2f34b04b
+  security_group_cidr_ip: "0.0.0.0/0"
 
 provisioner:
   name: chef_zero
+  product_name: chef
+  product_version: 14.12.3
   # You may wish to disable always updating cookbooks in CI or other testing environments.
   # For example:
   #   always_update_cookbooks: <%= !ENV['CI'] %>
   always_update_cookbooks: true
 
 verifier:
-  name: inspec
+  name: shell
+  remote_exec: true
+  command: curl -o /tmp/dnat-test.sh https://gist.githubusercontent.com/fatz/fe9b905eb5ab043450c0cac25c03e26b/raw/f36f2208c2e905355865500c3138687e442a6136/kernel-dnat-issue.sh && chmod +x /tmp/dnat-test.sh && sudo /tmp/dnat-test.sh
 
 platforms:
-  - name: ubuntu-16.04
-  - name: centos-7
+  - name: centos-7-1708_11.01
+    driver:
+      image_id: ami-02e98f78
+  - name: centos-7-1901_01
+    driver:
+      image_id: ami-02eac2c0129f6376b
+  - name: centos-7-1801_01
+    driver:
+      image_id: ami-4bf3d731
+  - name: centos-7-1805_01
+    driver:
+      image_id: ami-9887c6e7
+  - name: centos-7-1803_01
+    driver:
+      image_id: ami-b81dbfc5
+  - name: centos-7-1804_2
+    driver:
+      image_id: ami-d5bf2caa
 
 suites:
   - name: default
     run_list:
       - recipe[dnat_issue::default]
-    verifier:
-      inspec_tests:
-        - test/smoke/default
     attributes:
